@@ -8,6 +8,8 @@ SERVICE_NAME="discraker"
 
 API_URL="https://api.github.com/repos/${REPO}/releases/latest"
 
+SERVICE_USER="${SUDO_USER:-$USER}"
+
 # Determine GoReleaser asset name
 OS="$(uname -s)"
 
@@ -68,6 +70,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+User=${SERVICE_USER}
 WorkingDirectory=${INSTALL_DIR}
 ExecStart=${INSTALL_DIR}/${ASSET_NAME}
 Restart=always
