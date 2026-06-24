@@ -22,6 +22,12 @@ esac
 
 ASSET_NAME="discraker_${OS}_${ARCH}"
 
+if [ "$EUID" -eq 0 ]; then
+    SUDO=""
+else
+    SUDO="sudo"
+fi
+
 echo "Finding latest release..."
 
 DOWNLOAD_URL="$(wget -qO- "$API_URL" \
@@ -40,10 +46,10 @@ fi
 
 echo "Downloading $DOWNLOAD_URL"
 
-install -d -m 755 "$INSTALL_DIR"
+$SUDO install -d -m 755 "$INSTALL_DIR"
 
 wget -O "${INSTALL_DIR}/${APP}" "$DOWNLOAD_URL"
-chmod +x "${INSTALL_DIR}/${APP}"
+$SUDO chmod +x "${INSTALL_DIR}/${APP}"
 
 cat > "${INSTALL_DIR}/release_info.json" <<EOF
 {
@@ -54,7 +60,7 @@ cat > "${INSTALL_DIR}/release_info.json" <<EOF
 }
 EOF
 
-cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOF
+$SUDO cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOF
 [Unit]
 Description=Discraker
 After=network-online.target
@@ -71,8 +77,8 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-systemctl daemon-reload
-systemctl enable --now "${SERVICE_NAME}"
+$SUDO systemctl daemon-reload
+$SUDO systemctl enable --now "${SERVICE_NAME}"
 
 echo "Installed ${APP} ${VERSION}"
 echo "Moonraker update manager config:"
