@@ -46,7 +46,7 @@ fi
 
 echo "Downloading $DOWNLOAD_URL"
 
-$SUDO install -d -m 755 "$INSTALL_DIR"
+install -d -m 755 "$INSTALL_DIR"
 
 wget -O "${INSTALL_DIR}/${APP}" "$DOWNLOAD_URL"
 $SUDO chmod +x "${INSTALL_DIR}/${APP}"
