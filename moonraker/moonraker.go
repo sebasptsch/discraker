@@ -53,8 +53,7 @@ func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
 
 		stream = wsrpc.NewObjectStream(wsConn)
 	case "unix":
-		socketPath := "~/printer_data/comms/moonraker.sock"
-		conn, err := net.Dial("unix", socketPath)
+		conn, err := net.Dial("unix", connectionUrl.Path)
 		if err != nil {
 			log.Fatalf("Failed to dial Unix socket: %v", err)
 		}
