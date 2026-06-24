@@ -72,7 +72,7 @@ Wants=network-online.target
 Type=simple
 User=${SERVICE_USER}
 WorkingDirectory=${INSTALL_DIR}
-ExecStart=${INSTALL_DIR}/${ASSET_NAME}
+ExecStart=${INSTALL_DIR}/${ASSET_NAME} -config ~/printer_data/config/discraker.cfg
 Restart=always
 RestartSec=5
 
