@@ -71,7 +71,7 @@ func main() {
 		return nil, nil
 	})
 
-	moonrakerSession, err := moonraker.New("wss://printerpi.tailnet-288e.ts.net", handler)
+	moonrakerSession, err := moonraker.New(Config.Moonraker.ConnectionURL, handler)
 
 	if err != nil {
 		log.Panicf("Failed to create moonraker session")
