@@ -60,7 +60,7 @@ cat > "${INSTALL_DIR}/release_info.json" <<EOF
 }
 EOF
 
-$SUDO cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOF
+$SUDO tee "/etc/systemd/system/${SERVICE_NAME}.service" >/dev/null <<EOF
 [Unit]
 Description=Discraker
 After=network-online.target
