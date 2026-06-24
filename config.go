@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/pelletier/go-toml/v2"
 )
@@ -32,7 +34,18 @@ var Config = &ConfigDefinition{
 	},
 }
 
+func expandPath(path string) string {
+	if strings.HasPrefix(path, "~/") {
+		home, err := os.UserHomeDir()
+		if err == nil {
+			return filepath.Join(home, path[2:])
+		}
+	}
+	return path
+}
+
 func ReadConfig(path string) error {
+	path = expandPath(path)
 	_, err := os.Stat(path)
 	if errors.Is(err, os.ErrPermission) {
 		log.Fatalf("Path: %s is unwritable", path)
