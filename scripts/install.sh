@@ -3,7 +3,7 @@ set -euo pipefail
 
 REPO="sebasptsch/discraker"
 APP="discraker"
-INSTALL_DIR="~/printer_data/tools/discraker"
+INSTALL_DIR="$HOME/printer_data/tools/discraker"
 SERVICE_NAME="discraker"
 
 API_URL="https://api.github.com/repos/${REPO}/releases/latest"
