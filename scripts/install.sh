@@ -48,8 +48,8 @@ echo "Downloading $DOWNLOAD_URL"
 
 install -d -m 755 "$INSTALL_DIR"
 
-wget -O "${INSTALL_DIR}/${APP}" "$DOWNLOAD_URL"
-$SUDO chmod +x "${INSTALL_DIR}/${APP}"
+wget -O "${INSTALL_DIR}/${ASSET_NAME}" "$DOWNLOAD_URL"
+$SUDO chmod +x "${INSTALL_DIR}/${ASSET_NAME}"
 
 cat > "${INSTALL_DIR}/release_info.json" <<EOF
 {
@@ -69,7 +69,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=${INSTALL_DIR}
-ExecStart=${INSTALL_DIR}/${APP}
+ExecStart=${INSTALL_DIR}/${ASSET_NAME}
 Restart=always
 RestartSec=5
 
