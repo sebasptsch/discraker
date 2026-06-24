@@ -19,6 +19,7 @@ import (
 var commandDefinitions = []*discordgo.ApplicationCommand{
 	&commands.EchoDefinition,
 	&commands.WebcamsDefinition,
+	&commands.SnapshotDefinition,
 }
 
 // Bot parameters
@@ -92,6 +93,8 @@ func main() {
 			commands.EchoHandler(s, i, utils.ParseOptions(data.Options))
 		case "webcams":
 			commands.WebcamsHandler(moonrakerSession, s, i)
+		case "snapshot":
+			commands.SnapshotHandler(moonrakerSession, s, i)
 		}
 
 	})
