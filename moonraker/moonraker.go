@@ -57,7 +57,8 @@ func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
 		if err != nil {
 			log.Fatalf("Failed to dial Unix socket: %v", err)
 		}
-		stream = jsonrpc2.NewPlainObjectStream(conn)
+		stream = NewETXObjectStream(conn)
+		// stream = NewETXObjectStream(conn)
 	default:
 		log.Fatalf("%s scheme not supported", scheme)
 	}
