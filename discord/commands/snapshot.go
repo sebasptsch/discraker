@@ -33,7 +33,10 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 
 	var builder strings.Builder
 	for _, webcam := range reply.Webcams {
+		builder.WriteString("** ")
+		builder.WriteString(":camera_with_flash:")
 		builder.WriteString(webcam.Name)
+		builder.WriteString(" **")
 		builder.WriteString("\n")
 		if len(webcam.SnapshotURL) > 0 {
 			resp, err := http.Get(webcam.SnapshotURL)
