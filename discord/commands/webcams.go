@@ -23,11 +23,15 @@ func WebcamsHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.Int
 
 		descriptionBuilder.WriteString(webcam.Service)
 
+		var fields = []*discordgo.MessageEmbedField{
+			{Name: "Service", Value: webcam.Service, Inline: true},
+			{Name: "Source", Value: webcam.Source, Inline: true},
+			{Name: "Enabled", Value: fmt.Sprintf("%t", webcam.Enabled), Inline: true},
+		}
+
 		webcamEmbed := discordgo.MessageEmbed{
-			Title:       webcam.Name,
-			URL:         webcam.StreamURL,
-			Description: descriptionBuilder.String(),
-			Fields:      []*discordgo.MessageEmbedField{{Name: "Service", Value: webcam.Service}, {Name: "Source", Value: webcam.Source}},
+			Title:  webcam.Name,
+			Fields: fields,
 		}
 
 		embeds = append(embeds, &webcamEmbed)
