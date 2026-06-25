@@ -18,6 +18,17 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 		log.Panicln("Failed to get webcams")
 	}
 
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "Taking Snapshot",
+		},
+	})
+
+	if err != nil {
+		log.Panicf("could not respond to interaction: %s", err)
+	}
+
 	var snapshots []*discordgo.File
 
 	var builder strings.Builder
@@ -46,12 +57,11 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 
 	}
 
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: builder.String(),
-			Files:   snapshots,
-		},
+	content := builder.String()
+
+	_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+		Content: &content,
+		Files:   snapshots,
 	})
 
 	if err != nil {
