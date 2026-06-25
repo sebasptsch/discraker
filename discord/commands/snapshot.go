@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -11,11 +11,11 @@ import (
 	"github.com/sebasptsch/discraker/moonraker"
 )
 
-func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.InteractionCreate) {
+func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	reply, err := m.WebcamsList()
 
 	if err != nil {
-		log.Panicln("Failed to get webcams")
+		return err
 	}
 
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -26,7 +26,7 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 	})
 
 	if err != nil {
-		log.Panicf("could not respond to interaction: %s", err)
+		return err
 	}
 
 	var snapshots []*discordgo.File
@@ -68,10 +68,12 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 	})
 
 	if err != nil {
-		log.Panicf("could not respond to interaction: %s", err)
+		slog.Error(fmt.Sprintf("could not respond to interaction: %s", err))
+		return err
 	}
 
-	fmt.Printf("Result successfully received: %+v\n", reply)
+	slog.Info(fmt.Sprintf("Result successfully received: %+v\n", reply))
+	return nil
 }
 
 var SnapshotDefinition = discordgo.ApplicationCommand{

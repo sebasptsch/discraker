@@ -2,7 +2,8 @@ package moonraker
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"log/slog"
 	"net"
 	"net/url"
 
@@ -19,13 +20,18 @@ type Session struct {
 }
 
 func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
+	s := &Session{}
+
 	moonrakerContext, cancel := context.WithCancel(context.Background())
+
+	s.ContextCancel = cancel
+	s.Context = &moonrakerContext
 
 	var stream jsonrpc2.ObjectStream
 	connectionUrl, err := url.Parse(connectionString)
 
 	if err != nil {
-		log.Panicf("URL format not valid %v", err)
+		return s, err
 	}
 
 	switch scheme := connectionUrl.Scheme; scheme {
@@ -43,33 +49,29 @@ func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
 		} else {
 			u = url.URL{Scheme: "wss", Host: connectionUrl.Host, Path: "/websocket"}
 		}
-		log.Printf("Connecting with URL: %s", u.String())
+		slog.Info(fmt.Sprintf("Connecting with URL: %s", u.String()))
 
 		dialer := websocket.DefaultDialer
 		wsConn, _, err := dialer.Dial(u.String(), nil)
 		if err != nil {
-			log.Fatalf("WebSocket connection failed: %v", err)
+			return s, err
 		}
 
 		stream = wsrpc.NewObjectStream(wsConn)
 	case "unix":
 		conn, err := net.Dial("unix", connectionUrl.Path)
 		if err != nil {
-			log.Fatalf("Failed to dial Unix socket: %v", err)
+			return s, err
 		}
 		stream = NewETXObjectStream(conn)
 		// stream = NewETXObjectStream(conn)
 	default:
-		log.Fatalf("%s scheme not supported", scheme)
+		return s, err
 	}
 
 	rpcConn := jsonrpc2.NewConn(moonrakerContext, stream, handler)
 
-	s := &Session{
-		Context:       &moonrakerContext,
-		RPCConnection: rpcConn,
-		ContextCancel: cancel,
-	}
+	s.RPCConnection = rpcConn
 
 	return s, nil
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,28 +47,28 @@ func ReadConfig(path string) error {
 	path = expandPath(path)
 	_, err := os.Stat(path)
 	if errors.Is(err, os.ErrPermission) {
-		log.Fatalf("Path: %s is unwritable", path)
+		return err
 	} else if errors.Is(err, os.ErrNotExist) {
 		out, err := toml.Marshal(Config)
 		if err != nil {
-			log.Fatalf("Config is not valid: %v", err)
+			return err
 		}
 		err = os.WriteFile(path, out, 0644)
 
 		if err != nil {
-			log.Fatalf("Error writing default config %v", err)
+			return err
 		}
 	}
 
 	fileContents, err := os.ReadFile(path)
 
 	if err != nil {
-		log.Fatalf("Failed to read config file: %v", err)
+		return err
 	}
 
 	err = toml.Unmarshal(fileContents, Config)
 	if err != nil {
-		log.Fatalf("Failed to parse config file: %v", err)
+		return err
 	}
 
 	return err

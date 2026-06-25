@@ -1,14 +1,13 @@
 package commands
 
 import (
-	"log"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sebasptsch/discraker/discord/utils"
 )
 
-func EchoHandler(s *discordgo.Session, i *discordgo.InteractionCreate, opts utils.OptionMap) {
+func EchoHandler(s *discordgo.Session, i *discordgo.InteractionCreate, opts utils.OptionMap) error {
 	builder := new(strings.Builder)
 	if v, ok := opts["author"]; ok && v.BoolValue() {
 		author := utils.InteractionAuthor(i.Interaction)
@@ -24,8 +23,9 @@ func EchoHandler(s *discordgo.Session, i *discordgo.InteractionCreate, opts util
 	})
 
 	if err != nil {
-		log.Panicf("could not respond to interaction: %s", err)
+		return err
 	}
+	return nil
 }
 
 var EchoDefinition = discordgo.ApplicationCommand{
