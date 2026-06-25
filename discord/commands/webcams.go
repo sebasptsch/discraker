@@ -16,16 +16,28 @@ func WebcamsHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.Int
 		log.Panicln("Failed to get webcams")
 	}
 
-	var builder strings.Builder
+	var embeds []*discordgo.MessageEmbed
+
 	for _, webcam := range reply.Webcams {
-		builder.WriteString(webcam.Name)
-		builder.WriteString("\n")
+		var descriptionBuilder strings.Builder
+
+		descriptionBuilder.WriteString(webcam.Service)
+
+		webcamEmbed := discordgo.MessageEmbed{
+			Title:       webcam.Name,
+			URL:         webcam.StreamURL,
+			Description: descriptionBuilder.String(),
+			Fields:      []*discordgo.MessageEmbedField{{Name: "Service", Value: webcam.Service}, {Name: "Source", Value: webcam.Source}},
+		}
+
+		embeds = append(embeds, &webcamEmbed)
 	}
 
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: builder.String(),
+			Content: "# Webcams",
+			Embeds:  embeds,
 		},
 	})
 
