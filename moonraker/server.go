@@ -95,7 +95,7 @@ func (s *Session) ServerRestart() (structs.Okay, error) {
 func (s *Session) ServerConnectionIdentify(params structs.ServerConnectionIdentifyParams) (structs.ServerConnectionIdentify, error) {
 	var reply structs.ServerConnectionIdentify
 
-	err := s.Call("server.connection.identify", nil, &reply)
+	err := s.Call("server.connection.identify", params, &reply)
 
 	if err != nil {
 		return structs.ServerConnectionIdentify{}, err
