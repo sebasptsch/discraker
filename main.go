@@ -11,8 +11,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"runtime/debug"
-
 	"github.com/sebasptsch/discraker/discord/commands"
 	"github.com/sebasptsch/discraker/discord/utils"
 	"github.com/sebasptsch/discraker/moonraker"
@@ -32,6 +30,8 @@ var (
 
 	// AppId          = flag.String("app", "", "The application id")
 )
+
+var version = "dev"
 
 func main() {
 	flag.Parse()
@@ -123,14 +123,6 @@ func main() {
 	if err != nil {
 		slog.Error(fmt.Sprintf("could not register commands: %s", err))
 		panic(err)
-	}
-
-	buildInfo, okay := debug.ReadBuildInfo()
-
-	version := "dev"
-
-	if okay {
-		version = buildInfo.Main.Version
 	}
 
 	identifyReply, err := moonrakerSession.ServerConnectionIdentify(structs.ServerConnectionIdentifyParams{
