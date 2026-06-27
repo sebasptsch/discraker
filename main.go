@@ -35,10 +35,10 @@ var version = "dev"
 
 func main() {
 	slog.Info(fmt.Sprintf("Running Discraker version: %s", version))
-	flag.Parse()
-	ReadConfig(*ConfigPath)
-	discordSession, err := discordgo.New("Bot " + Config.Discord.Token)
+	flag.Parse()            // Parse CLI Flags
+	ReadConfig(*ConfigPath) // Read the Config into memory
 
+	discordSession, err := discordgo.New("Bot " + Config.Discord.Token)
 	if err != nil {
 		slog.Error("Failed to create a discord session")
 		panic(err)
@@ -46,8 +46,6 @@ func main() {
 
 	defer discordSession.Close()
 
-	// 4. Set up an empty handler for incoming notifications/requests from server
-	// The client needs a running background loop to continuously parse incoming reads
 	handler := jsonrpc2.HandlerWithError(func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (interface{}, error) {
 		// Handle asynchronous server notifications or reverse calls here if required
 
@@ -79,12 +77,10 @@ func main() {
 	})
 
 	moonrakerSession, err := moonraker.New(Config.Moonraker.ConnectionURL, handler)
-
 	if err != nil {
 		slog.Error("Failed to create moonraker session")
 		panic(err)
 	}
-
 	defer moonrakerSession.Close()
 
 	// Interaction Handler
@@ -110,6 +106,18 @@ func main() {
 
 	})
 
+	identifyReply, err := moonrakerSession.ServerConnectionIdentify(structs.ServerConnectionIdentifyParams{
+		ClientName: "Discraker",
+		Version:    version,
+		Type:       "bot",
+		URL:        "https://github.com/sebasptsch/discraker",
+	})
+
+	if err != nil {
+		slog.Error(fmt.Sprintf("Error querying printer info: %v", err))
+		panic(err)
+	}
+
 	// Ready Handler
 	discordSession.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		slog.Info(fmt.Sprintf("Logged in as %s", r.User.String()))
@@ -123,18 +131,6 @@ func main() {
 	_, err = discordSession.ApplicationCommandBulkOverwrite(discordSession.State.Application.ID, Config.Discord.GuildID, commandDefinitions) // Send through the command definition
 	if err != nil {
 		slog.Error(fmt.Sprintf("could not register commands: %s", err))
-		panic(err)
-	}
-
-	identifyReply, err := moonrakerSession.ServerConnectionIdentify(structs.ServerConnectionIdentifyParams{
-		ClientName: "Discraker",
-		Version:    version,
-		Type:       "bot",
-		URL:        "https://github.com/sebasptsch/discraker",
-	})
-
-	if err != nil {
-		slog.Error(fmt.Sprintf("Error querying printer info: %v", err))
 		panic(err)
 	}
 
