@@ -34,6 +34,7 @@ var (
 var version = "dev"
 
 func main() {
+	slog.Info(fmt.Sprintf("Running Discraker version: %s", version))
 	flag.Parse()
 	ReadConfig(*ConfigPath)
 	discordSession, err := discordgo.New("Bot " + Config.Discord.Token)
