@@ -5,8 +5,8 @@ type ServerConnectionIdentifyParams struct {
 	Version     string `json:"version"`
 	Type        string `json:"type"`
 	URL         string `json:"url"`
-	AccessToken string `json:"access_token"`
-	APIKey      string `json:"api_key"`
+	AccessToken string `json:"access_token,omitempty"`
+	APIKey      string `json:"api_key,omitempty"`
 }
 
 type ServerConnectionIdentify struct {
