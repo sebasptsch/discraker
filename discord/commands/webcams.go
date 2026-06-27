@@ -9,7 +9,7 @@ import (
 )
 
 func WebcamsHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
-	reply, err := m.WebcamsList()
+	reply, err := m.ServerWebcamsList()
 
 	if err != nil {
 		return err

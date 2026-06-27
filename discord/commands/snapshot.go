@@ -12,7 +12,7 @@ import (
 )
 
 func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
-	reply, err := m.WebcamsList()
+	reply, err := m.ServerWebcamsList()
 
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 	}
 
 	slog.Info(fmt.Sprintf("Result successfully received: %+v\n", reply))
-	return nil
+	return err
 }
 
 var SnapshotDefinition = discordgo.ApplicationCommand{

@@ -11,9 +11,12 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
+	"runtime/debug"
+
 	"github.com/sebasptsch/discraker/discord/commands"
 	"github.com/sebasptsch/discraker/discord/utils"
 	"github.com/sebasptsch/discraker/moonraker"
+	"github.com/sebasptsch/discraker/moonraker/structs"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
@@ -122,12 +125,27 @@ func main() {
 		panic(err)
 	}
 
-	_, err = moonrakerSession.PrinterInfo()
+	buildInfo, okay := debug.ReadBuildInfo()
+
+	version := "dev"
+
+	if okay {
+		version = buildInfo.Main.Version
+	}
+
+	identifyReply, err := moonrakerSession.ServerConnectionIdentify(structs.ServerConnectionIdentifyParams{
+		ClientName: "Discraker",
+		Version:    version,
+		Type:       "bot",
+		URL:        "https://github.com/sebasptsch/discraker",
+	})
 
 	if err != nil {
 		slog.Error(fmt.Sprintf("Error querying printer info: %v", err))
 		panic(err)
 	}
+
+	slog.Info(fmt.Sprintf("Connected to Moonraker with Connection ID: %d", identifyReply.ConnectionID))
 
 	// Handle Exit
 	stop := make(chan os.Signal, 1)

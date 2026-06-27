@@ -2,23 +2,30 @@ package moonraker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
 	"net/url"
+	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/sebasptsch/discraker/moonraker/comms"
 	"github.com/sourcegraph/jsonrpc2"
 	wsrpc "github.com/sourcegraph/jsonrpc2/websocket"
 )
 
 // Empty struct for rpc session
 type Session struct {
-	Context       *context.Context
+	// The RPC Background Context
+	Context *context.Context
+	// The RPC Connection itself
 	RPCConnection *jsonrpc2.Conn
+	// The cancel function to abort any in-progress RPC requests
 	ContextCancel context.CancelFunc
 }
 
+// Create a new Moonraker client session
 func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
 	s := &Session{}
 
@@ -35,7 +42,6 @@ func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
 	}
 
 	switch scheme := connectionUrl.Scheme; scheme {
-
 	case "http":
 		fallthrough
 	case "ws":
@@ -63,15 +69,32 @@ func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
 		if err != nil {
 			return s, err
 		}
-		stream = NewETXObjectStream(conn)
+		stream = comms.NewETXObjectStream(conn)
 		// stream = NewETXObjectStream(conn)
 	default:
-		return s, err
+		return s, errors.ErrUnsupported
 	}
 
-	rpcConn := jsonrpc2.NewConn(moonrakerContext, stream, handler)
-
-	s.RPCConnection = rpcConn
+	s.RPCConnection = jsonrpc2.NewConn(moonrakerContext, stream, handler)
 
 	return s, nil
+}
+
+// The close function that cancells running requests and frees up resources
+func (s *Session) Close() {
+	if s.RPCConnection != nil {
+		s.RPCConnection.Close()
+	}
+
+	s.ContextCancel()
+}
+
+// The Moonraker RPC Call
+func (s *Session) Call(method string, params any, reply any) error {
+	ctx, cancel := context.WithTimeout(*s.Context, 5*time.Second)
+	defer cancel()
+
+	err := s.RPCConnection.Call(ctx, method, params, &reply)
+
+	return err
 }

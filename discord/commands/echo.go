@@ -22,10 +22,7 @@ func EchoHandler(s *discordgo.Session, i *discordgo.InteractionCreate, opts util
 		},
 	})
 
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 var EchoDefinition = discordgo.ApplicationCommand{

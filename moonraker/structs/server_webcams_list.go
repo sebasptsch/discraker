@@ -1,6 +1,6 @@
 package structs
 
-type WebcamListEntry struct {
+type ServerWebcamListEntry struct {
 	Name           string `json:"name"`
 	Location       string `json:"location"`
 	Service        string `json:"service"`
@@ -14,11 +14,11 @@ type WebcamListEntry struct {
 	FlipVertical   bool   `json:"flip_vertical"`
 	Rotation       int    `json:"rotation"`
 	AspectRatio    string `json:"aspect_ratio"`
-	// ExtraData
-	Source string `json:"source"`
-	UID    string `json:"uid"`
+	ExtraData      any    `json:"extra_data"`
+	Source         string `json:"source"`
+	UID            string `json:"uid"`
 }
 
-type WebcamList struct {
-	Webcams []WebcamListEntry `json:"webcams"`
+type ServerWebcamList struct {
+	Webcams []ServerWebcamListEntry `json:"webcams"`
 }
