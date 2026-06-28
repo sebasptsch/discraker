@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,29 +51,29 @@ func ReadConfig(path string) error {
 	path = expandPath(path)
 	_, err := os.Stat(path)
 	if errors.Is(err, os.ErrPermission) {
-		return err
+		return fmt.Errorf("missing permissions to read config %w", err)
 	} else if errors.Is(err, os.ErrNotExist) {
 		out, err := toml.Marshal(Config)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to marshal default config %w", err)
 		}
 		err = os.WriteFile(path, out, 0644)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to write config file %w", err)
 		}
 	}
 
 	fileContents, err := os.ReadFile(path)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read config file %w", err)
 	}
 
 	err = toml.Unmarshal(fileContents, Config)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse config file %w", err)
 	}
 
-	return err
+	return nil
 }

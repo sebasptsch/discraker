@@ -18,13 +18,13 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to reply to interaction %w", err)
 	}
 
 	reply, err := m.ServerWebcamsList()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to fetch webcam list %w", err)
 	}
 
 	var files = []*discordgo.File{}
@@ -36,14 +36,14 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 		if webcam.SnapshotURL != nil {
 			resp, err := http.Get(*webcam.SnapshotURL)
 			if err != nil {
-				break
+				return fmt.Errorf("failed to get screenshot from webcam %s: %w", webcam.Name, err)
 			}
 			defer resp.Body.Close()
 
 			imageUrl, err := url.Parse(*webcam.SnapshotURL)
 
 			if err != nil {
-				break
+				return fmt.Errorf("failed to parse webcam snapshot url %s: %w", webcam.Name, err)
 			}
 
 			ext := filepath.Ext(imageUrl.Path)
@@ -77,11 +77,10 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 	})
 
 	if err != nil {
-		slog.Error(fmt.Sprintf("could not respond to interaction: %s", err))
-		return err
+		return fmt.Errorf("failed to edit interaction response %w", err)
 	}
 
-	return err
+	return nil
 }
 
 var SnapshotDefinition = discordgo.ApplicationCommand{

@@ -68,7 +68,7 @@ func New(params *ConnectionParameters, handler jsonrpc2.Handler) (*Session, erro
 	u, err := url.Parse(*s.connectionParameters.SocketURL)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse socket url %w", err)
 	}
 
 	switch scheme := u.Scheme; scheme {
@@ -89,15 +89,16 @@ func New(params *ConnectionParameters, handler jsonrpc2.Handler) (*Session, erro
 
 		dialer := websocket.DefaultDialer
 		wsConn, _, err := dialer.Dial(u.String(), *connectionHeaders)
+
 		if err != nil {
-			return s, err
+			return s, fmt.Errorf("error connecting to websocket %w", err)
 		}
 
 		stream = wsrpc.NewObjectStream(wsConn)
 	case "unix":
 		conn, err := net.Dial("unix", expandPath(u.Path))
 		if err != nil {
-			return s, err
+			return s, fmt.Errorf("failed to dial unix socket %w", err)
 		}
 		stream = comms.NewETXObjectStream(conn)
 		// stream = NewETXObjectStream(conn)

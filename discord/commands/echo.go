@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -22,7 +23,11 @@ func EchoHandler(s *discordgo.Session, i *discordgo.InteractionCreate, opts util
 		},
 	})
 
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to respond to interaction %w", err)
+	}
+
+	return nil
 }
 
 var EchoDefinition = discordgo.ApplicationCommand{

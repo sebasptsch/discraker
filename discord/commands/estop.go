@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/sebasptsch/discraker/moonraker"
 )
@@ -9,7 +11,7 @@ func EStopHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.Inter
 	_, err := m.PrinterEmergencyStop()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to execute emergency stop %w", err)
 	}
 
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -20,7 +22,11 @@ func EStopHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.Inter
 		},
 	})
 
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to respond to interaction %w", err)
+	}
+
+	return nil
 }
 
 var EStopDefinition = discordgo.ApplicationCommand{

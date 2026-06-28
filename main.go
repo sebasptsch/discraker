@@ -40,8 +40,7 @@ func main() {
 
 	discordSession, err := discordgo.New("Bot " + *Config.Discord.Token)
 	if err != nil {
-		slog.Error("Failed to create a discord session")
-		panic(err)
+		panic(fmt.Errorf("failed to create discord session %w", err))
 	}
 
 	defer discordSession.Close()
@@ -85,8 +84,7 @@ func main() {
 	moonrakerSession, err := moonraker.New(moonrakerConnectionParams, handler)
 
 	if err != nil {
-		slog.Error("Failed to create moonraker session")
-		panic(err)
+		panic(fmt.Errorf("failed to create moonraker session %w", err))
 	}
 	defer moonrakerSession.Close()
 
@@ -121,9 +119,10 @@ func main() {
 	})
 
 	if err != nil {
-		slog.Error(fmt.Sprintf("Error querying printer info: %v", err))
-		panic(err)
+		panic(fmt.Errorf("failed to get reply from moonraker identification request %w", err))
 	}
+
+	slog.Info(fmt.Sprintf("Connected to Moonraker with Connection ID: %d", identifyReply.ConnectionID))
 
 	// Ready Handler
 	discordSession.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
@@ -132,16 +131,13 @@ func main() {
 
 	err = discordSession.Open() // Start the bot session
 	if err != nil {
-		slog.Error(fmt.Sprintf("could not open session: %s", err))
+		panic(fmt.Errorf("failed to open discord session %w", err))
 	}
 
 	_, err = discordSession.ApplicationCommandBulkOverwrite(discordSession.State.Application.ID, *Config.Discord.GuildID, commandDefinitions) // Send through the command definition
 	if err != nil {
-		slog.Error(fmt.Sprintf("could not register commands: %s", err))
-		panic(err)
+		panic(fmt.Errorf("failed to publish/overwrite discord commands %w", err))
 	}
-
-	slog.Info(fmt.Sprintf("Connected to Moonraker with Connection ID: %d", identifyReply.ConnectionID))
 
 	// Handle Exit
 	stop := make(chan os.Signal, 1)

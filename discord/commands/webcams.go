@@ -12,7 +12,7 @@ func WebcamsHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.Int
 	reply, err := m.ServerWebcamsList()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to fetch webcam list %w", err)
 	}
 
 	var embeds []*discordgo.MessageEmbed
@@ -45,7 +45,7 @@ func WebcamsHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.Int
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to respond to interaction %w", err)
 	}
 
 	return nil
