@@ -48,6 +48,8 @@ type ConnectionParameters struct {
 	SocketURL *string
 	// API Key is used for both HTTP and RPC operations
 	APIKey *string
+	// Token
+	AccessToken *string
 }
 
 // Create a new Moonraker client session
@@ -77,8 +79,12 @@ func New(params *ConnectionParameters, handler jsonrpc2.Handler) (*Session, erro
 
 		connectionHeaders := &http.Header{}
 
-		if params.APIKey != nil {
+		if s.connectionParameters.APIKey != nil {
 			connectionHeaders.Add("X-API-Key", *params.APIKey)
+		}
+
+		if s.connectionParameters.AccessToken != nil {
+			connectionHeaders.Add("Authorization", fmt.Sprintf("Bearer %s", *s.connectionParameters.AccessToken))
 		}
 
 		dialer := websocket.DefaultDialer
@@ -140,7 +146,13 @@ func newRequest(s *Session, method string, path string, body io.Reader) (*http.R
 		return nil, err
 	}
 
-	request.Header.Add("X-API-Key", *s.connectionParameters.APIKey)
+	if s.connectionParameters.APIKey != nil {
+		request.Header.Add("X-API-Key", *s.connectionParameters.APIKey)
+	}
+
+	if s.connectionParameters.AccessToken != nil {
+		request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *s.connectionParameters.AccessToken))
+	}
 
 	return request, nil
 }
