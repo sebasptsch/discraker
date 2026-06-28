@@ -42,13 +42,12 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("failed to create discord session %w", err))
 	}
-
 	defer discordSession.Close()
 
 	handler := jsonrpc2.HandlerWithError(func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (interface{}, error) {
 		// Handle asynchronous server notifications or reverse calls here if required
 
-		switch req.Method {
+		switch m := req.Method; m {
 		// case "notify_active_spool_set":
 		// 	{
 		// 		channel, err := discordSession.UserChannelCreate(*ChannelId)
@@ -65,11 +64,12 @@ func main() {
 		// 	}
 		case "notify_proc_stat_update":
 			{
-				// This fires a lot even if I don't subscribe
+				// var params structs.MachineProcStats
+				// err := json.Unmarshal(*req.Params, &params)
 			}
 		default:
 			{
-				slog.Warn(fmt.Sprintf("Received notification/request from server: %s", req.Method))
+				slog.Warn(fmt.Sprintf("Received notification/request from server: %s", m))
 			}
 		}
 		return nil, nil
@@ -81,12 +81,13 @@ func main() {
 		APIKey:    Config.Moonraker.APIKey,
 	}
 
-	moonrakerSession, err := moonraker.New(moonrakerConnectionParams, handler)
+	moonrakerSession := moonraker.New(moonrakerConnectionParams, handler)
+	defer moonrakerSession.Close()
+	err = moonrakerSession.Open()
 
 	if err != nil {
-		panic(fmt.Errorf("failed to create moonraker session %w", err))
+		panic(fmt.Errorf("failed to open moonraker session %w", err))
 	}
-	defer moonrakerSession.Close()
 
 	// Interaction Handler
 	discordSession.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {

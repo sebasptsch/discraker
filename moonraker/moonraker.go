@@ -26,9 +26,11 @@ type Session struct {
 	// The RPC Connection itself
 	rpc_connection *jsonrpc2.Conn
 	// The cancel function to abort any in-progress RPC requests
-	context_cancel context.CancelFunc
+	context_cancel *context.CancelFunc
 	// Connection URL
 	connectionParameters *ConnectionParameters
+	// handler
+	handler jsonrpc2.Handler
 }
 
 func expandPath(path string) string {
@@ -53,14 +55,19 @@ type ConnectionParameters struct {
 }
 
 // Create a new Moonraker client session
-func New(params *ConnectionParameters, handler jsonrpc2.Handler) (*Session, error) {
+func New(params *ConnectionParameters, handler jsonrpc2.Handler) *Session {
 	s := &Session{
 		connectionParameters: params,
+		handler:              handler,
 	}
 
+	return s
+}
+
+func (s *Session) Open() error {
 	moonrakerContext, cancel := context.WithCancel(context.Background())
 
-	s.context_cancel = cancel
+	s.context_cancel = &cancel
 	s.context = &moonrakerContext
 
 	var stream jsonrpc2.ObjectStream
@@ -68,7 +75,7 @@ func New(params *ConnectionParameters, handler jsonrpc2.Handler) (*Session, erro
 	u, err := url.Parse(*s.connectionParameters.SocketURL)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse socket url %w", err)
+		return fmt.Errorf("failed to parse socket url %w", err)
 	}
 
 	switch scheme := u.Scheme; scheme {
@@ -80,7 +87,7 @@ func New(params *ConnectionParameters, handler jsonrpc2.Handler) (*Session, erro
 		connectionHeaders := &http.Header{}
 
 		if s.connectionParameters.APIKey != nil {
-			connectionHeaders.Add("X-API-Key", *params.APIKey)
+			connectionHeaders.Add("X-API-Key", *s.connectionParameters.APIKey)
 		}
 
 		if s.connectionParameters.AccessToken != nil {
@@ -91,24 +98,24 @@ func New(params *ConnectionParameters, handler jsonrpc2.Handler) (*Session, erro
 		wsConn, _, err := dialer.Dial(u.String(), *connectionHeaders)
 
 		if err != nil {
-			return s, fmt.Errorf("error connecting to websocket %w", err)
+			return fmt.Errorf("error connecting to websocket %w", err)
 		}
 
 		stream = wsrpc.NewObjectStream(wsConn)
 	case "unix":
 		conn, err := net.Dial("unix", expandPath(u.Path))
 		if err != nil {
-			return s, fmt.Errorf("failed to dial unix socket %w", err)
+			return fmt.Errorf("failed to dial unix socket %w", err)
 		}
 		stream = comms.NewETXObjectStream(conn)
 		// stream = NewETXObjectStream(conn)
 	default:
-		return s, fmt.Errorf("unsupported scheme used %s", scheme)
+		return fmt.Errorf("unsupported scheme used %s", scheme)
 	}
 
-	s.rpc_connection = jsonrpc2.NewConn(moonrakerContext, stream, handler)
+	s.rpc_connection = jsonrpc2.NewConn(moonrakerContext, stream, s.handler)
 
-	return s, nil
+	return nil
 }
 
 // The close function that cancells running requests and frees up resources
@@ -117,7 +124,8 @@ func (s *Session) Close() {
 		s.rpc_connection.Close()
 	}
 
-	s.context_cancel()
+	context_cancellation := *s.context_cancel
+	context_cancellation()
 }
 
 // A generic function to abstract away moonraker rpc calling functionality
