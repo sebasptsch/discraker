@@ -10,12 +10,13 @@ import (
 )
 
 type MoonrakerConfigDefinition struct {
-	ConnectionURL string `toml:"connection_url,commented" comment:"default url is the moonraker socket, can also be the url to your moonraker instance" `
+	ConnectionURL *string `toml:"connection_url,commented" comment:"default url is the moonraker socket, can also be the url to your moonraker instance" ` // unix:///~/printer_data/comms/moonraker.sock
+	APIKey        *string `toml:"api_key,commented" comment:"optional API key for access to moonraker"`
 }
 
 type DiscordConfigDefinition struct {
-	Token   string `toml:"token,commented" comment:"Fill this in with your discord bot token from https://discord.com/developers/applications"`
-	GuildID string `toml:"guild_id,commented" comment:"Optionally add the ID of the server you want your bot to be in"`
+	Token   *string `toml:"token,commented" comment:"Fill this in with your discord bot token from https://discord.com/developers/applications"`
+	GuildID *string `toml:"guild_id,commented" comment:"Optionally add the ID of the server you want your bot to be in"`
 }
 
 type ConfigDefinition struct {
@@ -23,13 +24,16 @@ type ConfigDefinition struct {
 	Discord   DiscordConfigDefinition   `toml:"discord" comment:"Discord connection settings"`
 }
 
+var defaultValue = "xxx"
+
 var Config = &ConfigDefinition{
 	Moonraker: MoonrakerConfigDefinition{
-		ConnectionURL: "xxx", // default values
+		ConnectionURL: &defaultValue, // default values
+		APIKey:        &defaultValue,
 	},
 	Discord: DiscordConfigDefinition{
-		Token:   "xxx", // default values
-		GuildID: "xxx", // default values
+		Token:   &defaultValue, // default values
+		GuildID: &defaultValue, // default values
 	},
 }
 

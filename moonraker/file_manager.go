@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
-	"net/http"
 	"net/url"
 
 	"github.com/sebasptsch/discraker/moonraker/structs"
@@ -75,7 +74,7 @@ func (s *Session) ServerFilesDownload(params structs.ServerFilesDownloadParams) 
 		return nil, err
 	}
 
-	request, err := http.NewRequestWithContext(*s.Context, "GET", requestURL, nil)
+	request, err := newRequest(s, "GET", requestURL, nil)
 
 	if err != nil {
 		return nil, err
@@ -134,7 +133,7 @@ func (s *Session) ServerFilesUpload(params structs.ServerFilesUploadParams) (str
 		return structs.ServerFilesUpload{}, err
 	}
 
-	request, err := http.NewRequestWithContext(*s.Context, "POST", requestURL, buf)
+	request, err := newRequest(s, "POST", requestURL, buf)
 
 	if err != nil {
 		return structs.ServerFilesUpload{}, err

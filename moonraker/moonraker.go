@@ -4,10 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -28,13 +32,25 @@ type Session struct {
 	HTTPClient *http.Client
 	// Connection URL
 	ConnectionURL *url.URL
+	apiKey        *string
+}
+
+func expandPath(path string) string {
+	if strings.HasPrefix(path, "~/") {
+		home, err := os.UserHomeDir()
+		if err == nil {
+			return filepath.Join(home, path[2:])
+		}
+	}
+	return path
 }
 
 // Create a new Moonraker client session
-func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
-	s := &Session{}
-
-	s.HTTPClient = &http.Client{} // HTTP Client To-Be-Configured (Missing Auth)
+func New(connectionString string, apiKey *string, handler jsonrpc2.Handler) (*Session, error) {
+	s := &Session{
+		HTTPClient: &http.Client{},
+		apiKey:     apiKey,
+	}
 
 	moonrakerContext, cancel := context.WithCancel(context.Background())
 
@@ -66,15 +82,21 @@ func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
 		}
 		slog.Info(fmt.Sprintf("Connecting with URL: %s", u.String()))
 
+		connectionHeaders := &http.Header{}
+
+		if apiKey != nil {
+			connectionHeaders.Add("X-API-Key", *apiKey)
+		}
+
 		dialer := websocket.DefaultDialer
-		wsConn, _, err := dialer.Dial(u.String(), nil)
+		wsConn, _, err := dialer.Dial(u.String(), *connectionHeaders)
 		if err != nil {
 			return s, err
 		}
 
 		stream = wsrpc.NewObjectStream(wsConn)
 	case "unix":
-		conn, err := net.Dial("unix", connectionUrl.Path)
+		conn, err := net.Dial("unix", expandPath(connectionUrl.Path))
 		if err != nil {
 			return s, err
 		}
@@ -112,4 +134,16 @@ func rpc[T any](s *Session, method string, params any) (T, error) {
 	}
 
 	return reply, nil
+}
+
+func newRequest(s *Session, method string, url string, body io.Reader) (*http.Request, error) {
+	request, err := http.NewRequestWithContext(*s.Context, method, url, body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Add("X-API-Key", *s.apiKey)
+
+	return request, nil
 }

@@ -38,7 +38,7 @@ func main() {
 	flag.Parse()            // Parse CLI Flags
 	ReadConfig(*ConfigPath) // Read the Config into memory
 
-	discordSession, err := discordgo.New("Bot " + Config.Discord.Token)
+	discordSession, err := discordgo.New("Bot " + *Config.Discord.Token)
 	if err != nil {
 		slog.Error("Failed to create a discord session")
 		panic(err)
@@ -76,7 +76,7 @@ func main() {
 		return nil, nil
 	})
 
-	moonrakerSession, err := moonraker.New(Config.Moonraker.ConnectionURL, handler)
+	moonrakerSession, err := moonraker.New(*Config.Moonraker.ConnectionURL, Config.Moonraker.APIKey, handler)
 	if err != nil {
 		slog.Error("Failed to create moonraker session")
 		panic(err)
@@ -128,7 +128,7 @@ func main() {
 		slog.Error(fmt.Sprintf("could not open session: %s", err))
 	}
 
-	_, err = discordSession.ApplicationCommandBulkOverwrite(discordSession.State.Application.ID, Config.Discord.GuildID, commandDefinitions) // Send through the command definition
+	_, err = discordSession.ApplicationCommandBulkOverwrite(discordSession.State.Application.ID, *Config.Discord.GuildID, commandDefinitions) // Send through the command definition
 	if err != nil {
 		slog.Error(fmt.Sprintf("could not register commands: %s", err))
 		panic(err)
