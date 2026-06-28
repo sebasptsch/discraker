@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -23,11 +24,17 @@ type Session struct {
 	RPCConnection *jsonrpc2.Conn
 	// The cancel function to abort any in-progress RPC requests
 	ContextCancel context.CancelFunc
+	// HTTP Client for downloading and uploading
+	HTTPClient *http.Client
+	// Connection URL
+	ConnectionURL *url.URL
 }
 
 // Create a new Moonraker client session
 func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
 	s := &Session{}
+
+	s.HTTPClient = &http.Client{} // HTTP Client To-Be-Configured (Missing Auth)
 
 	moonrakerContext, cancel := context.WithCancel(context.Background())
 
@@ -40,6 +47,8 @@ func New(connectionString string, handler jsonrpc2.Handler) (*Session, error) {
 	if err != nil {
 		return s, err
 	}
+
+	s.ConnectionURL = connectionUrl
 
 	switch scheme := connectionUrl.Scheme; scheme {
 	case "http":
