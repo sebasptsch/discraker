@@ -81,7 +81,6 @@ func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.In
 		return err
 	}
 
-	slog.Info(fmt.Sprintf("Result successfully received: %+v\n", reply))
 	return err
 }
 

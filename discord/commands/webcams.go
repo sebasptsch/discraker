@@ -48,7 +48,6 @@ func WebcamsHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.Int
 		return err
 	}
 
-	fmt.Printf("Result successfully received: %+v\n", reply)
 	return nil
 }
 
