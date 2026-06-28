@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
-	"net/url"
+	"net/http"
 
 	"github.com/sebasptsch/discraker/moonraker/structs"
 )
@@ -68,19 +68,15 @@ func (s *Session) ServerFilesZip(params structs.ServerFilesZipParams) (structs.S
 
 // https://moonraker.readthedocs.io/en/latest/external_api/file_manager/#file-download
 func (s *Session) ServerFilesDownload(params structs.ServerFilesDownloadParams) (io.ReadCloser, error) {
-	requestURL, err := url.JoinPath(s.ConnectionURL.String(), fmt.Sprintf("/server/files/%s/%s", params.Root, params.Filename))
+	requestPath := fmt.Sprintf("/server/files/%s/%s", params.Root, params.Filename)
+
+	request, err := newRequest(s, "GET", requestPath, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
-	request, err := newRequest(s, "GET", requestURL, nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	response, err := s.HTTPClient.Do(request)
+	response, err := http.DefaultClient.Do(request)
 
 	if err != nil {
 		return nil, err
@@ -91,12 +87,6 @@ func (s *Session) ServerFilesDownload(params structs.ServerFilesDownloadParams) 
 
 // https://moonraker.readthedocs.io/en/latest/external_api/file_manager/#file-upload
 func (s *Session) ServerFilesUpload(params structs.ServerFilesUploadParams) (structs.ServerFilesUpload, error) {
-	requestURL, err := url.JoinPath(s.ConnectionURL.String(), "/server/files/upload")
-
-	if err != nil {
-		return structs.ServerFilesUpload{}, err
-	}
-
 	buf := &bytes.Buffer{}
 
 	mpw := multipart.NewWriter(buf)
@@ -133,13 +123,13 @@ func (s *Session) ServerFilesUpload(params structs.ServerFilesUploadParams) (str
 		return structs.ServerFilesUpload{}, err
 	}
 
-	request, err := newRequest(s, "POST", requestURL, buf)
+	request, err := newRequest(s, "POST", "/server/files/upload", buf)
 
 	if err != nil {
 		return structs.ServerFilesUpload{}, err
 	}
 
-	uploadResponse, err := s.HTTPClient.Do(request)
+	uploadResponse, err := http.DefaultClient.Do(request)
 
 	if err != nil {
 		return structs.ServerFilesUpload{}, err

@@ -5,66 +5,75 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"strings"
+	"path/filepath"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sebasptsch/discraker/moonraker"
 )
 
 func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
-	reply, err := m.ServerWebcamsList()
 
-	if err != nil {
-		return err
-	}
-
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Taking Snapshot",
-		},
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 	})
 
 	if err != nil {
 		return err
 	}
 
-	var snapshots []*discordgo.File
+	reply, err := m.ServerWebcamsList()
 
-	var builder strings.Builder
+	if err != nil {
+		return err
+	}
+
+	var files = []*discordgo.File{}
+	var embeds = []*discordgo.MessageEmbed{}
+
 	for _, webcam := range reply.Webcams {
-		builder.WriteString("** ")
-		builder.WriteString(":camera_with_flash:")
-		builder.WriteString(webcam.Name)
-		builder.WriteString(" **")
-		builder.WriteString("\n")
-		if len(webcam.SnapshotURL) > 0 {
-			resp, err := http.Get(webcam.SnapshotURL)
+		embed := discordgo.MessageEmbed{}
+
+		if webcam.SnapshotURL != nil {
+			resp, err := http.Get(*webcam.SnapshotURL)
 			if err != nil {
 				break
 			}
 			defer resp.Body.Close()
 
-			imageUrl, err := url.Parse(webcam.SnapshotURL)
+			imageUrl, err := url.Parse(*webcam.SnapshotURL)
 
 			if err != nil {
 				break
 			}
 
-			snapshots = append(snapshots, &discordgo.File{
-				Name:        imageUrl.Path,
+			ext := filepath.Ext(imageUrl.Path)
+
+			filename := fmt.Sprintf("%s%s", webcam.Name, ext)
+
+			files = append(files, &discordgo.File{
+				Name:        filename,
 				ContentType: resp.Header.Get("Content-Type"),
 				Reader:      resp.Body,
 			})
+
+			slog.Debug(filename)
+
+			embed.Image = &discordgo.MessageEmbedImage{
+				URL: fmt.Sprintf("attachment://%s", filename),
+			}
 		}
 
+		embed.Title = webcam.Name
+
+		embeds = append(embeds, &embed)
 	}
 
-	content := builder.String()
+	msg := "\u200b"
 
 	_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
-		Content: &content,
-		Files:   snapshots,
+		Content: &msg,
+		Files:   files,
+		Embeds:  &embeds,
 	})
 
 	if err != nil {

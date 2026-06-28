@@ -10,13 +10,14 @@ import (
 )
 
 type MoonrakerConfigDefinition struct {
-	ConnectionURL *string `toml:"connection_url,commented" comment:"default url is the moonraker socket, can also be the url to your moonraker instance" ` // unix:///~/printer_data/comms/moonraker.sock
-	APIKey        *string `toml:"api_key,commented" comment:"optional API key for access to moonraker"`
+	SocketURL *string `toml:"socket_url,commented" comment:"default url is the moonraker socket, can also be the url to your moonraker instance" ` // unix:///~/printer_data/comms/moonraker.sock
+	HttpURL   *string `toml:"http_url"`
+	APIKey    *string `toml:"api_key,commented,omitempty" comment:"optional API key for access to moonraker"` // xxx
 }
 
 type DiscordConfigDefinition struct {
-	Token   *string `toml:"token,commented" comment:"Fill this in with your discord bot token from https://discord.com/developers/applications"`
-	GuildID *string `toml:"guild_id,commented" comment:"Optionally add the ID of the server you want your bot to be in"`
+	Token   *string `toml:"token,commented" comment:"Fill this in with your discord bot token from https://discord.com/developers/applications"` // xxx
+	GuildID *string `toml:"guild_id,commented" comment:"Optionally add the ID of the server you want your bot to be in"`                         // xxx
 }
 
 type ConfigDefinition struct {
@@ -24,17 +25,15 @@ type ConfigDefinition struct {
 	Discord   DiscordConfigDefinition   `toml:"discord" comment:"Discord connection settings"`
 }
 
-var defaultValue = "xxx"
+var defaultSocketURL = "unix:///~/printer_data/comms/moonraker.sock"
+var defaultHttpURL = "http://localhost:7125"
 
 var Config = &ConfigDefinition{
 	Moonraker: MoonrakerConfigDefinition{
-		ConnectionURL: &defaultValue, // default values
-		APIKey:        &defaultValue,
+		SocketURL: &defaultSocketURL, // default values
+		HttpURL:   &defaultHttpURL,
 	},
-	Discord: DiscordConfigDefinition{
-		Token:   &defaultValue, // default values
-		GuildID: &defaultValue, // default values
-	},
+	Discord: DiscordConfigDefinition{},
 }
 
 func expandPath(path string) string {

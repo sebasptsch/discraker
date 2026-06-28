@@ -76,7 +76,14 @@ func main() {
 		return nil, nil
 	})
 
-	moonrakerSession, err := moonraker.New(*Config.Moonraker.ConnectionURL, Config.Moonraker.APIKey, handler)
+	moonrakerConnectionParams := &moonraker.ConnectionParameters{
+		HttpURL:   Config.Moonraker.HttpURL,
+		SocketURL: Config.Moonraker.SocketURL,
+		APIKey:    Config.Moonraker.APIKey,
+	}
+
+	moonrakerSession, err := moonraker.New(moonrakerConnectionParams, handler)
+
 	if err != nil {
 		slog.Error("Failed to create moonraker session")
 		panic(err)
