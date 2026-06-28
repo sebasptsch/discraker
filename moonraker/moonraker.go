@@ -89,12 +89,18 @@ func (s *Session) Close() {
 	s.ContextCancel()
 }
 
-// The Moonraker RPC Call
-func (s *Session) Call(method string, params any, reply any) error {
+// A generic function to abstract away moonraker rpc calling functionality
+func rpc[T any](s *Session, method string, params any) (T, error) {
+	var reply T
+
+	// 5 second timeout
 	ctx, cancel := context.WithTimeout(*s.Context, 5*time.Second)
 	defer cancel()
 
-	err := s.RPCConnection.Call(ctx, method, params, &reply)
+	if err := s.RPCConnection.Call(ctx, method, params, &reply); err != nil {
+		var zero T
+		return zero, err
+	}
 
-	return err
+	return reply, nil
 }
