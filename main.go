@@ -93,10 +93,6 @@ func main() {
 	// 	Objects: {},
 	// })
 
-	moonrakerSession.ConnectionRegisterRemoteMethod(moonrakerclient.ConnectionRegisterRemoteMethodParams{
-		MethodName: "discraker_notify",
-	})
-
 	defer moonrakerSession.Close()
 
 	// Interaction Handler
@@ -134,6 +130,18 @@ func main() {
 	}
 
 	slog.Info(fmt.Sprintf("Connected to Moonraker with Connection ID: %d", identifyReply.ConnectionID))
+
+	okay, err := moonrakerSession.ConnectionRegisterRemoteMethod(moonrakerclient.ConnectionRegisterRemoteMethodParams{
+		MethodName: "discraker_notify",
+	})
+
+	if err != nil {
+		slog.Error(fmt.Sprintf("Failed to register remote method %v", err))
+	}
+
+	if okay == "okay" {
+		slog.Info("Registered Remote Method")
+	}
 
 	// Ready Handler
 	discordSession.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
