@@ -121,7 +121,7 @@ func main() {
 	identifyReply, err := moonrakerSession.ServerConnectionIdentify(structs.ServerConnectionIdentifyParams{
 		ClientName: "Discraker",
 		Version:    version,
-		Type:       "bot",
+		Type:       "agent",
 		URL:        "https://github.com/sebasptsch/discraker",
 	})
 
