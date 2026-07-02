@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sebasptsch/discraker/moonraker"
+	moonrakerclient "github.com/sebasptsch/discraker/moonraker-client"
 )
 
-func EStopHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
+func EStopHandler(m *moonrakerclient.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	_, err := m.PrinterEmergencyStop()
 
 	if err != nil {

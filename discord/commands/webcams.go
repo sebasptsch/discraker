@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sebasptsch/discraker/moonraker"
+	moonrakerclient "github.com/sebasptsch/discraker/moonraker-client"
 )
 
-func WebcamsHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
+func WebcamsHandler(m *moonrakerclient.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	reply, err := m.ServerWebcamsList()
 
 	if err != nil {

@@ -1,4 +1,4 @@
-package moonraker
+package moonrakerclient
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/sebasptsch/discraker/moonraker/comms"
+	"github.com/sebasptsch/discraker/moonraker-client/comms"
 	"github.com/sourcegraph/jsonrpc2"
 	wsrpc "github.com/sourcegraph/jsonrpc2/websocket"
 )

@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sebasptsch/discraker/moonraker"
+	moonrakerclient "github.com/sebasptsch/discraker/moonraker-client"
 )
 
-func SnapshotHandler(m *moonraker.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
+func SnapshotHandler(m *moonrakerclient.Session, s *discordgo.Session, i *discordgo.InteractionCreate) error {
 
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,

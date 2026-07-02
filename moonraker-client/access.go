@@ -1,6 +1,6 @@
-package moonraker
+package moonrakerclient
 
-import "github.com/sebasptsch/discraker/moonraker/structs"
+import "github.com/sebasptsch/discraker/moonraker-client/structs"
 
 // https://moonraker.readthedocs.io/en/latest/external_api/authorization/#login-user
 func (s *Session) AccessLogin(params structs.AccessLoginParams) (structs.AccessLogin, error) {

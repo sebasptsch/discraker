@@ -1,4 +1,4 @@
-package moonraker
+package moonrakerclient
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"github.com/sebasptsch/discraker/moonraker/structs"
+	"github.com/sebasptsch/discraker/moonraker-client/structs"
 )
 
 // https://moonraker.readthedocs.io/en/latest/external_api/file_manager/#list-available-files

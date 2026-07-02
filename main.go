@@ -13,8 +13,8 @@ import (
 
 	"github.com/sebasptsch/discraker/discord/commands"
 	"github.com/sebasptsch/discraker/discord/utils"
-	"github.com/sebasptsch/discraker/moonraker"
-	"github.com/sebasptsch/discraker/moonraker/structs"
+	moonrakerclient "github.com/sebasptsch/discraker/moonraker-client"
+	"github.com/sebasptsch/discraker/moonraker-client/structs"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
@@ -27,8 +27,6 @@ var commandDefinitions = []*discordgo.ApplicationCommand{
 // Bot parameters
 var (
 	ConfigPath = flag.String("config", "~/printer_data/config/discraker.cfg", "Config file path")
-
-	// AppId          = flag.String("app", "", "The application id")
 )
 
 var version = "dev"
@@ -48,6 +46,10 @@ func main() {
 		// Handle asynchronous server notifications or reverse calls here if required
 
 		switch m := req.Method; m {
+		case "discraker_notify":
+			{
+				slog.Info("Discraker notify called")
+			}
 		// case "notify_active_spool_set":
 		// 	{
 		// 		channel, err := discordSession.UserChannelCreate(*ChannelId)
@@ -75,19 +77,27 @@ func main() {
 		return nil, nil
 	})
 
-	moonrakerConnectionParams := &moonraker.ConnectionParameters{
+	moonrakerConnectionParams := &moonrakerclient.ConnectionParameters{
 		HttpURL:   Config.Moonraker.HttpURL,
 		SocketURL: Config.Moonraker.SocketURL,
 		APIKey:    Config.Moonraker.APIKey,
 	}
 
-	moonrakerSession := moonraker.New(moonrakerConnectionParams, handler)
-	defer moonrakerSession.Close()
+	moonrakerSession := moonrakerclient.New(moonrakerConnectionParams, handler)
 	err = moonrakerSession.Open()
-
 	if err != nil {
 		panic(fmt.Errorf("failed to open moonraker session %w", err))
 	}
+
+	// moonrakerSession.PrinterObjectsSubscribe(structs.PrinterObjectsQueryParams{
+	// 	Objects: {},
+	// })
+
+	moonrakerSession.ConnectionRegisterRemoteMethod(moonrakerclient.ConnectionRegisterRemoteMethodParams{
+		MethodName: "discraker_notify",
+	})
+
+	defer moonrakerSession.Close()
 
 	// Interaction Handler
 	discordSession.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {

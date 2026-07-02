@@ -1,6 +1,6 @@
-package moonraker
+package moonrakerclient
 
-import "github.com/sebasptsch/discraker/moonraker/structs"
+import "github.com/sebasptsch/discraker/moonraker-client/structs"
 
 // https://moonraker.readthedocs.io/en/latest/external_api/machine/#get-system-info
 func (s *Session) MachineSystemInfo() (structs.MachineSystemInfo, error) {

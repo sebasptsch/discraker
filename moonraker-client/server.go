@@ -1,7 +1,7 @@
-package moonraker
+package moonrakerclient
 
 import (
-	"github.com/sebasptsch/discraker/moonraker/structs"
+	"github.com/sebasptsch/discraker/moonraker-client/structs"
 )
 
 func (s *Session) ServerWebcamsList() (structs.ServerWebcamList, error) {
